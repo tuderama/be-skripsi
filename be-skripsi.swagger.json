@@ -1,0 +1,876 @@
+{
+    "info": {
+        "title": "be-skripsi",
+        "description": "",
+        "version": "1.0.0"
+    },
+    "tags": [
+        {
+            "name": "Auth"
+        },
+        {
+            "name": "Profile"
+        },
+        {
+            "name": "AirData"
+        },
+        {
+            "name": "Notification"
+        }
+    ],
+    "paths": {
+        "/api/login": {
+            "post": {
+                "summary": "login",
+                "deprecated": false,
+                "description": "",
+                "tags": ["Auth"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "login": {
+                                    "type": "string"
+                                },
+                                "password": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["login", "password"]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "examples": {
+                            "application/json": {
+                                "status": "success",
+                                "statusCode": 200,
+                                "message": "Login berhasil",
+                                "data": {
+                                    "id": 1,
+                                    "name": "tuderama",
+                                    "email": "tuderama@gmail.com",
+                                    "image": null,
+                                    "email_verified_at": null,
+                                    "created_at": "2026-01-18T12:33:04.000000Z",
+                                    "updated_at": "2026-01-18T12:33:04.000000Z"
+                                },
+                                "token": "2|5uMF1vSZFAxVXT1uoT71wZRMulQ4IYvYCorErCZA9fd60186"
+                            }
+                        },
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "statusCode": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "image": {
+                                            "type": "null"
+                                        },
+                                        "email_verified_at": {
+                                            "type": "null"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "email",
+                                        "image",
+                                        "email_verified_at",
+                                        "created_at",
+                                        "updated_at"
+                                    ]
+                                },
+                                "token": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "status",
+                                "statusCode",
+                                "message",
+                                "data",
+                                "token"
+                            ]
+                        }
+                    }
+                },
+                "security": [],
+                "consumes": ["application/json"],
+                "produces": ["application/json"]
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "summary": "logout",
+                "deprecated": false,
+                "description": "",
+                "tags": ["Auth"],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "examples": {
+                            "application/json": {
+                                "status": "success",
+                                "statusCode": 200,
+                                "message": "Logout berhasil"
+                            }
+                        },
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "statusCode": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["status", "statusCode", "message"]
+                        }
+                    }
+                },
+                "security": [],
+                "produces": ["application/json"]
+            }
+        },
+        "/api/user/profil-image": {
+            "post": {
+                "summary": "update gambar profile",
+                "deprecated": false,
+                "description": "",
+                "tags": ["Profile"],
+                "parameters": [
+                    {
+                        "name": "image",
+                        "in": "formData",
+                        "required": true,
+                        "format": "binary",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "examples": {
+                            "application/json": {
+                                "status": "success",
+                                "statusCode": 200,
+                                "message": "Foto profil berhasil diperbarui"
+                            }
+                        },
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "statusCode": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["status", "statusCode", "message"]
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "consumes": ["multipart/form-data"],
+                "produces": ["application/json"]
+            }
+        },
+        "/api/user/profil": {
+            "put": {
+                "summary": "update profil",
+                "deprecated": false,
+                "description": "",
+                "tags": ["Profile"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "email": {
+                                    "type": "string"
+                                },
+                                "old_password": {
+                                    "type": "string"
+                                },
+                                "new_password": {
+                                    "type": "string"
+                                },
+                                "confirm_password": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "name",
+                                "email",
+                                "old_password",
+                                "new_password",
+                                "confirm_password"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "examples": {
+                            "application/json": {
+                                "status": "success",
+                                "statusCode": 200,
+                                "message": "Profil berhasil diperbarui"
+                            }
+                        },
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "statusCode": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["status", "statusCode", "message"]
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "consumes": ["application/json"],
+                "produces": ["application/json"]
+            },
+            "get": {
+                "summary": "get user profile",
+                "deprecated": false,
+                "description": "",
+                "tags": ["Profile"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "examples": {
+                            "application/json": {
+                                "status": "success",
+                                "statusCode": 200,
+                                "message": "Data user berhasil diambil",
+                                "data": {
+                                    "id": 1,
+                                    "name": "Tude Rama",
+                                    "email": "tuderama2003@gmail.com",
+                                    "image": "profile/m2lZg2uzZveJo8KIoiVGa6M9Qcw6KBjhCDplV5zO.jpg",
+                                    "email_verified_at": null,
+                                    "created_at": "2026-01-18T12:33:04.000000Z",
+                                    "updated_at": "2026-01-21T11:00:25.000000Z"
+                                }
+                            }
+                        },
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "statusCode": {
+                                    "type": "integer"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "image": {
+                                            "type": "string"
+                                        },
+                                        "email_verified_at": {
+                                            "type": "null"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        },
+                                        "updated_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "email",
+                                        "image",
+                                        "email_verified_at",
+                                        "created_at",
+                                        "updated_at"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "status",
+                                "statusCode",
+                                "message",
+                                "data"
+                            ]
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "consumes": ["text/plain"],
+                "produces": ["application/json"]
+            }
+        },
+        "/api/air/pm25": {
+            "get": {
+                "summary": "get pm25 data",
+                "deprecated": false,
+                "description": "",
+                "tags": ["AirData"],
+                "parameters": [
+                    {
+                        "name": "days",
+                        "in": "query",
+                        "required": false,
+                        "type": "integer",
+                        "default": 1,
+                        "enum": [1, 2, 3, 5, 7],
+                        "description": "Rentang waktu data dalam hari"
+                    },
+                    {
+                        "name": "device",
+                        "in": "query",
+                        "required": false,
+                        "type": "string",
+                        "default": "device_1",
+                        "description": "ID perangkat IoT yang dipantau"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "examples": {
+                            "application/json": {
+                                "status": "success",
+                                "device": "device_1",
+                                "parameter_days": "1",
+                                "stats": {
+                                    "avg": 7.2,
+                                    "min": 0,
+                                    "max": 494.13
+                                },
+                                "ai": "kategori:buruk,ringkasan:Kualitas udara dalam ruangan sangat buruk dengan rata-rata PM2.5 7.2 µg/m³ dan puncak yang sangat tinggi mencapai 494.13 µg/m³. Kondisi ini berisiko bagi kesehatan, terutama bagi kelompok rentan.,saran:Tingkatkan ventilasi ruangan dengan membuka jendela atau menggunakan kipas; Gunakan pembersih udara (air purifier) dengan filter HEPA; Hindari aktivitas yang menghasilkan polusi di dalam ruangan seperti merokok atau membakar sesuatu.",
+                                "data": [
+                                    {
+                                        "time": "2026-04-28T16:40:47.780921",
+                                        "device_id": "device_1",
+                                        "pm_2_5": 0
+                                    }
+                                ]
+                            }
+                        },
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "device": {
+                                    "type": "string"
+                                },
+                                "parameter_days": {
+                                    "type": "string"
+                                },
+                                "stats": {
+                                    "type": "object",
+                                    "properties": {
+                                        "avg": {
+                                            "type": "number"
+                                        },
+                                        "min": {
+                                            "type": "integer"
+                                        },
+                                        "max": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["avg", "min", "max"]
+                                },
+                                "ai": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "time": {
+                                                "type": "string"
+                                            },
+                                            "device_id": {
+                                                "type": "string"
+                                            },
+                                            "pm_2_5": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": [
+                                            "time",
+                                            "device_id",
+                                            "pm_2_5"
+                                        ]
+                                    }
+                                }
+                            },
+                            "required": [
+                                "status",
+                                "device",
+                                "parameter_days",
+                                "stats",
+                                "ai",
+                                "data"
+                            ]
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "produces": ["application/json"]
+            }
+        },
+        "/api/air/co": {
+            "get": {
+                "summary": "get co data",
+                "deprecated": false,
+                "description": "",
+                "tags": ["AirData"],
+                "parameters": [
+                    {
+                        "name": "days",
+                        "in": "query",
+                        "required": false,
+                        "type": "integer",
+                        "default": 1,
+                        "enum": [1, 2, 3, 5, 7],
+                        "description": "Rentang waktu data dalam hari"
+                    },
+                    {
+                        "name": "device",
+                        "in": "query",
+                        "required": false,
+                        "type": "string",
+                        "default": "device_1",
+                        "description": "ID perangkat IoT yang dipantau"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "examples": {
+                            "application/json": {
+                                "status": "success",
+                                "device": "device_1",
+                                "parameter_days": "1",
+                                "stats": {
+                                    "avg": 4.01,
+                                    "min": 0,
+                                    "max": 14.38
+                                },
+                                "ai": "kategori:sedang,ringkasan:Konsentrasi CO dalam ruangan rata-rata 4.01 ppm, dengan nilai maksimum mencapai 14.38 ppm. Tingkat ini masih dalam kategori sedang namun perlu diwaspadai karena mendekati batas aman.saran:Pastikan ventilasi ruangan memadai; periksa sumber potensi kebocoran CO seperti kompor atau pemanas; pertimbangkan penggunaan detektor CO.",
+                                "data": [
+                                    {
+                                        "time": "2026-04-27T16:40:48.768713",
+                                        "device_id": "device_1",
+                                        "co": 1.2
+                                    }
+                                ]
+                            }
+                        },
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "device": {
+                                    "type": "string"
+                                },
+                                "parameter_days": {
+                                    "type": "string"
+                                },
+                                "stats": {
+                                    "type": "object",
+                                    "properties": {
+                                        "avg": {
+                                            "type": "number"
+                                        },
+                                        "min": {
+                                            "type": "integer"
+                                        },
+                                        "max": {
+                                            "type": "number"
+                                        }
+                                    },
+                                    "required": ["avg", "min", "max"]
+                                },
+                                "ai": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "time": {
+                                                "type": "string"
+                                            },
+                                            "device_id": {
+                                                "type": "string"
+                                            },
+                                            "co": {
+                                                "type": "number"
+                                            }
+                                        },
+                                        "required": ["time", "device_id", "co"]
+                                    }
+                                }
+                            },
+                            "required": [
+                                "status",
+                                "device",
+                                "parameter_days",
+                                "stats",
+                                "ai",
+                                "data"
+                            ]
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "produces": ["application/json"]
+            }
+        },
+        "/api/air/device": {
+            "get": {
+                "summary": "get devices",
+                "deprecated": false,
+                "description": "",
+                "tags": ["AirData"],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "examples": {
+                            "application/json": {
+                                "status": "success",
+                                "total": 1,
+                                "devices": ["device_1"]
+                            }
+                        },
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "total": {
+                                    "type": "integer"
+                                },
+                                "devices": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "required": ["status", "total", "devices"]
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "produces": ["application/json"]
+            }
+        },
+        "/api/update-token": {
+            "post": {
+                "summary": "update token",
+                "deprecated": false,
+                "description": "",
+                "tags": ["Notification"],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "user_id": {
+                                    "type": "string"
+                                },
+                                "fcm_token": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["user_id", "fcm_token"]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "examples": {
+                            "application/json": {
+                                "status": true,
+                                "message": "Token FCM sudah sama. Tidak ada perubahan yang dilakukan."
+                            }
+                        },
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "boolean"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["status", "message"]
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "consumes": ["application/json"],
+                "produces": ["application/json"]
+            }
+        },
+        "/api/notifications/{user_id}": {
+            "get": {
+                "summary": "get notification",
+                "deprecated": false,
+                "description": "",
+                "tags": ["Notification"],
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true,
+                        "type": "integer",
+                        "description": "ID pengguna"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "examples": {
+                            "application/json": {
+                                "status": "success",
+                                "message": "Data notifikasi ditemukan",
+                                "data": [
+                                    {
+                                        "id": 2555,
+                                        "user_id": 1,
+                                        "message": "CO telah melebihi ambang batas 10 kali berturut-turut dengan nilai saat ini 9.53 ppm dan telah melebihi batas aman.",
+                                        "created_at": "2026-04-28T16:38:36.000000Z",
+                                        "updated_at": "2026-04-28T16:38:36.000000Z"
+                                    }
+                                ]
+                            }
+                        },
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                },
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "user_id": {
+                                                "type": "integer"
+                                            },
+                                            "message": {
+                                                "type": "string"
+                                            },
+                                            "created_at": {
+                                                "type": "string"
+                                            },
+                                            "updated_at": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "id",
+                                            "user_id",
+                                            "message",
+                                            "created_at",
+                                            "updated_at"
+                                        ]
+                                    }
+                                }
+                            },
+                            "required": ["status", "message", "data"]
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "produces": ["application/json"]
+            }
+        },
+        "/api/notifications/delete-all/{user_id}": {
+            "delete": {
+                "summary": "delete notification",
+                "deprecated": false,
+                "description": "",
+                "tags": ["Notification"],
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true,
+                        "type": "integer",
+                        "description": "ID pengguna"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "examples": {
+                            "application/json": {
+                                "status": "success",
+                                "message": "Semua notifikasi berhasil dihapus"
+                            }
+                        },
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["status", "message"]
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ],
+                "produces": ["application/json"]
+            }
+        }
+    },
+    "security": [],
+    "swagger": "2.0",
+    "definitions": {},
+    "securityDefinitions": {
+        "bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    },
+    "x-components": {
+        "responses": {}
+    }
+}

@@ -9,7 +9,8 @@ use App\Models\User;
 use App\Models\Notifikasi;
 use Google\Auth\Credentials\ServiceAccountCredentials;
 
-class MqttAirSubscriber extends Command{
+class MqttAirSubscriber extends Command
+{
     protected $signature = 'mqtt:air';
     protected $description = 'Subscribe MQTT air topic, kirim ke InfluxDB, dan notifikasi FCM v1';
 
@@ -62,34 +63,109 @@ class MqttAirSubscriber extends Command{
             ->post('http://localhost:8181/api/v3/write_lp?db=skripsi_db');
     }
 
-    private function checkThresholdAndNotify($data)
+    private array $breakpoints = [
+        'co' => [
+            [100, 81, 1.7,  0.0],
+            [80,  61, 8.7,  1.8],
+            [60,  41, 10.0, 8.8],
+            [40,  21, 15.0, 10.1],
+            [20,  0,  30.0, 15.1],
+        ],
+        'pm_2_5' => [
+            [100, 81, 20,  0],
+            [80,  61, 50,  21],
+            [60,  41, 90,  51],
+            [40,  21, 140, 91],
+            [20,  0,  200, 141],
+        ],
+    ];
+
+    /**
+     * Hitung individual index (Ip) untuk satu polutan
+     * Rumus: Ip = ((IHi - ILo) / (BPHi - BPLo)) * (Cp - BPLo) + ILo
+     */
+    private function calculateIndividualIndex(float $cp, string $pollutant): ?int
     {
-        $co = $data['co'];
-        $pm = $data['pm_2_5'];
-        $alerts = [];
+        if (!isset($this->breakpoints[$pollutant])) {
+            return null;
+        }
 
-        if ($co > 9)  $alerts[] = "CO mencapai {$co} ppm";
-        if ($pm > 25) $alerts[] = "PM2.5 mencapai {$pm} µg/m³";
+        foreach ($this->breakpoints[$pollutant] as [$iHi, $iLo, $bpHi, $bpLo]) {
+            if ($cp >= $bpLo && $cp <= $bpHi) {
+                $ip = (($iHi - $iLo) / ($bpHi - $bpLo)) * ($cp - $bpLo) + $iLo;
+                return (int) round($ip);
+            }
+        }
 
-        if (!empty($alerts)) {
-            $alertMessage = implode(' dan ', $alerts);
-            $fullMessage  = "{$alertMessage} dan telah melebihi batas aman.";
+        // Jika konsentrasi melebihi semua breakpoint, clamp ke 0 (Severely Polluted)
+        return 0;
+    }
 
-            $this->warn("BAHAYA: $fullMessage");
+    /**
+     * Dapatkan label IAQI berdasarkan nilai index
+     */
+    private function getIaqiLabel(int $index): string
+    {
+        return match (true) {
+            $index >= 81 => 'Good',
+            $index >= 61 => 'Moderate',
+            $index >= 41 => 'Polluted',
+            $index >= 21 => 'Very Polluted',
+            default      => 'Severely Polluted',
+        };
+    }
 
-            // Ambil user yang punya token
+    /**
+     * Hitung IAQI final = MIN dari index CO dan PM2.5
+     * Kirim notifikasi jika status bukan "Good"
+     */
+    private function checkThresholdAndNotify(array $data): void
+    {
+        $co  = $data['co'];
+        $pm  = $data['pm_2_5'];
+
+        $indexCo  = $this->calculateIndividualIndex((float) $co,  'co');
+        $indexPm  = $this->calculateIndividualIndex((float) $pm,  'pm_2_5');
+
+        if ($indexCo === null || $indexPm === null) {
+            $this->warn("Data CO atau PM2.5 tidak valid.");
+            return;
+        }
+
+        $labelCo = $this->getIaqiLabel($indexCo);
+        $labelPm = $this->getIaqiLabel($indexPm);
+
+        $this->info("IAQI CO: {$indexCo} ({$labelCo})");
+        $this->info("IAQI PM2.5: {$indexPm} ({$labelPm})");
+
+        // Final IAQI = nilai minimum (polutan terburuk)
+        $finalIaqi      = min($indexCo, $indexPm);
+        $worstPollutant = $indexCo <= $indexPm ? "CO ({$co} ppm)" : "PM2.5 ({$pm} µg/m³)";
+        $finalLabel     = $this->getIaqiLabel($finalIaqi);
+
+        $this->info("Final IAQI: {$finalIaqi} ({$finalLabel}) — polutan penentu: {$worstPollutant}");
+
+        // Hanya kirim notifikasi jika status bukan "Good"
+        if ($finalIaqi <= 80) {
+            $fullMessage = "Kualitas udara dalam ruangan terdeteksi: {$finalLabel} "
+                . "Harap periksa ventilasi dan kondisi ruangan.";
+
+            $this->warn("PERINGATAN: {$fullMessage}");
+
             $users = User::whereNotNull('token')->get();
 
             foreach ($users as $user) {
-                // Simpan DB
                 Notifikasi::create([
                     'user_id' => $user->id,
                     'message' => $fullMessage,
                     'is_read' => false,
                 ]);
 
-                // Kirim FCM v1
-                $this->sendFcmNotification($user->token, "Udara Buruk Terdeteksi!", $fullMessage);
+                $this->sendFcmNotification(
+                    $user->token,
+                    "Kualitas Udara: {$finalLabel}",
+                    $fullMessage
+                );
             }
         }
     }

@@ -264,4 +264,102 @@ Aturan:
             'devices' => $devices
         ]);
     }
+
+
+    public function getAIRecomendation(Request $request)
+    {
+        $iaqi = $request->input('iaqi');
+
+        if (is_null($iaqi)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Parameter iaqi wajib diisi'
+            ], 400);
+        }
+
+        if (!is_numeric($iaqi)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Parameter iaqi harus berupa angka'
+            ], 400);
+        }
+
+        $ai = $this->askGeminiIAQI((int) $iaqi);
+
+        return response()->json([
+            'status' => 'success',
+            'iaqi'   => (int) $iaqi,
+            'ai'     => $ai,
+        ]);
+    }
+
+    private function getIaqiLabel(int $iaqi): string
+    {
+        return match (true) {
+            $iaqi >= 81 => 'Good',
+            $iaqi >= 61 => 'Moderate',
+            $iaqi >= 41 => 'Polluted',
+            $iaqi >= 21 => 'Very Polluted',
+            default     => 'Severely Polluted',
+        };
+    }
+
+    private function getIaqiLabelId(int $iaqi): string
+    {
+        return match (true) {
+            $iaqi >= 81 => 'baik',
+            $iaqi >= 61 => 'sedang',
+            $iaqi >= 41 => 'tercemar',
+            $iaqi >= 21 => 'sangat tercemar',
+            default     => 'berbahaya',
+        };
+    }
+
+    private function askGeminiIAQI(int $iaqi): string
+    {
+        $label   = $this->getIaqiLabel($iaqi);
+        $labelId = $this->getIaqiLabelId($iaqi);
+
+        // --- Respon default tanpa AI jika kondisi Good ---
+        if ($iaqi >= 81) {
+            return "kategori:baik," .
+                "ringkasan:Kualitas udara dalam ruangan sangat baik dengan IAQI {$iaqi}. " .
+                "Kondisi ini aman dan tidak menimbulkan risiko kesehatan bagi seluruh penghuni ruangan.," .
+                "saran:Pertahankan ventilasi ruangan yang sudah berjalan baik;" .
+                "Bersihkan ruangan secara rutin untuk menjaga kualitas udara;" .
+                "Hindari aktivitas yang dapat meningkatkan polutan seperti merokok di dalam ruangan";
+        }
+
+        $prompt = "
+Kamu adalah ahli kualitas udara dalam ruangan (indoor air quality). Analisis data IAQI berikut dan berikan respons informatif.
+
+DATA IAQI:
+- Final IAQI : {$iaqi} → status: {$label} ({$labelId})
+
+Skala IAQI:
+81–100 = Good (Baik)
+61–80  = Moderate (Sedang)
+41–60  = Polluted (Tercemar)
+21–40  = Very Polluted (Sangat Tercemar)
+0–20   = Severely Polluted (Berbahaya)
+
+Balas HANYA dalam format berikut (satu baris, tanpa baris baru, tanpa teks tambahan):
+kategori:{$labelId},ringkasan:<2 kalimat analisis yang natural dan relevan dengan nilai IAQI>,saran:<3 saran praktis spesifik dipisahkan titik koma>
+
+Panduan menulis:
+- Konteks: ini adalah kualitas udara DALAM RUANGAN, bukan luar ruangan
+- Ringkasan: sebutkan nilai IAQI dan statusnya secara eksplisit, jelaskan dampaknya pada kesehatan penghuni di dalam ruangan
+- Saran: fokus pada tindakan yang dilakukan DI DALAM RUANGAN seperti membuka jendela, menyalakan kipas/AC, mengurangi sumber polutan di dalam ruangan, dll. JANGAN menyarankan aktivitas luar ruangan
+- Gunakan bahasa Indonesia yang natural, hindari kalimat kaku
+";
+
+        $response = Gemini::text()
+            ->prompt($prompt)
+            ->temperature(0.3)
+            ->maxTokens(200)
+            ->generate();
+
+        return $response->content()
+            ?? "kategori:{$labelId},ringkasan:Data tidak dapat dianalisis saat ini.,saran:-";
+    }
 }
